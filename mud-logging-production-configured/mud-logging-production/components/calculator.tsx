@@ -1,4 +1,5 @@
 'use client';
+import PixlerPlot from './pixler-plot';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { calculateMudLogging, WORKBOOK_SAMPLE, type GasInputs, type Point } from '@/lib/calculations';
@@ -130,6 +131,14 @@ export default function Calculator() {
           <Result label="Hydrocarbon type" value={result.pixler.hydrocarbonType}/><Result label="Productivity" value={result.pixler.productivity}/><Result label="Trend check (K25)" value={String(result.pixler.trendCheck)}/>
           {result.pixler.ratios.map((v,i)=><Result key={i} label={`C1/C${i+2}`} value={show(v)}/>)}<Result label="C4/C1 slope (J12)" value={show(result.pixler.c4c1Slope)}/>
         </section>
+        <section className="card wide">
+  <h3>04 · B.O. Pixler Ratio Plot</h3>
+  <PixlerPlot ratios={result.pixler.ratios} />
+  <div className="status">
+    Reference values are taken from the original workbook.
+    The chart updates automatically with the gas readings.
+  </div>
+</section>
         <section className="card"><h3>04 · Triangulation Technique</h3>
           <Result label="Zone" value={result.triangulation.zone}/><Result label="Classification" value={result.triangulation.classification}/><Result label="Triangle size (B61)" value={show(result.triangulation.triangleSize)}/><Result label="X difference (B59)" value={show(result.triangulation.xDifference)}/><Result label="Y difference (B60)" value={show(result.triangulation.yDifference)}/>
         </section>
