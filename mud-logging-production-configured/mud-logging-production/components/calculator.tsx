@@ -132,7 +132,7 @@ export default function Calculator() {
           {result.pixler.ratios.map((v,i)=><Result key={i} label={`C1/C${i+2}`} value={show(v)}/>)}<Result label="C4/C1 slope (J12)" value={show(result.pixler.c4c1Slope)}/>
         </section>
         <section className="card wide">
-  <h3>04 · B.O. Pixler Ratio Plot</h3>
+  <h3>03 · B.O. Pixler Ratio Plot</h3>
   <PixlerPlot ratios={result.pixler.ratios} />
   <div className="status">
     Reference values are taken from the original workbook.
