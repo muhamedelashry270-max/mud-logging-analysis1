@@ -17,16 +17,59 @@ const show = (v: number) => Number.isFinite(v) ? fmt(v) : '#NUM! / #DIV/0!';
 function Plot({ lines, points }: { lines: {slope:number;intercept:number}[]; points: Point[] }) {
   const W=720,H=330,L=54,R=20,T=18,B=42,pw=W-L-R,ph=H-T-B,xmin=-1,xmax=26,ymin=-1,ymax=10;
   const X=(x:number)=>L+(x-xmin)/(xmax-xmin)*pw, Y=(y:number)=>T+ph-(y-ymin)/(ymax-ymin)*ph;
+
+  const validPoints = points.length === 3 && points.every(
+    p => Number.isFinite(p.x) && Number.isFinite(p.y)
+  );
+
+  const segments = validPoints
+    ? [
+        [points[0], points[1]],
+        [points[1], points[2]],
+        [points[2], points[0]]
+      ]
+    : [];
+
   return <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Workbook triangulation chart">
-    {Array.from({length:6},(_,i)=>i*5).map(x=><g key={`x${x}`}><line x1={X(x)} y1={T} x2={X(x)} y2={T+ph} stroke="#e7edf1"/><text x={X(x)} y={H-17} textAnchor="middle" fontSize="11" fill="#65798a">{x}</text></g>)}
-    {Array.from({length:6},(_,i)=>i*2).map(y=><g key={`y${y}`}><line x1={L} y1={Y(y)} x2={L+pw} y2={Y(y)} stroke="#e7edf1"/><text x={L-12} y={Y(y)+4} textAnchor="end" fontSize="11" fill="#65798a">{y}</text></g>)}
-    <line x1={L} y1={T+ph} x2={L+pw} y2={T+ph} stroke="#73899a"/><line x1={L} y1={T} x2={L} y2={T+ph} stroke="#73899a"/>
+    {Array.from({length:6},(_,i)=>i*5).map(x=><g key={`x${x}`}>
+      <line x1={X(x)} y1={T} x2={X(x)} y2={T+ph} stroke="#e7edf1"/>
+      <text x={X(x)} y={H-17} textAnchor="middle" fontSize="11" fill="#65798a">{x}</text>
+    </g>)}
+
+    {Array.from({length:6},(_,i)=>i*2).map(y=><g key={`y${y}`}>
+      <line x1={L} y1={Y(y)} x2={L+pw} y2={Y(y)} stroke="#e7edf1"/>
+      <text x={L-12} y={Y(y)+4} textAnchor="end" fontSize="11" fill="#65798a">{y}</text>
+    </g>)}
+
+    <line x1={L} y1={T+ph} x2={L+pw} y2={T+ph} stroke="#73899a"/>
+    <line x1={L} y1={T} x2={L} y2={T+ph} stroke="#73899a"/>
+
     <text x={L+pw/2} y={H-2} textAnchor="middle" fontSize="12" fill="#435b6c">X</text>
     <text x="14" y={T+ph/2} transform={`rotate(-90 14 ${T+ph/2})`} textAnchor="middle" fontSize="12" fill="#435b6c">Y</text>
-    {lines.map((line,i)=><line key={i} x1={X(xmin)} y1={Y(line.slope*xmin+line.intercept)} x2={X(xmax)} y2={Y(line.slope*xmax+line.intercept)} stroke={['#1683a5','#c17a27','#6c7db5'][i]} strokeWidth="2.2"/>)}
-    {points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))&&<>
-      <polygon points={points.map(p=>`${X(p.x)},${Y(p.y)}`).join(' ')} fill="#78b9ce" fillOpacity=".18" stroke="#286c89" strokeWidth="1.6"/>
-      {points.map((p,i)=><g key={i}><circle cx={X(p.x)} cy={Y(p.y)} r="4.5" fill="#163f5a"/><text x={X(p.x)+7} y={Y(p.y)-8} fontSize="11" fill="#163f5a">P{i+1}</text></g>)}
+
+    {validPoints && <>
+      <polygon
+        points={points.map(p=>`${X(p.x)},${Y(p.y)}`).join(' ')}
+        fill="#78b9ce"
+        fillOpacity=".18"
+        stroke="none"
+      />
+
+      {segments.map(([a,b],i)=><line
+        key={i}
+        x1={X(a.x)}
+        y1={Y(a.y)}
+        x2={X(b.x)}
+        y2={Y(b.y)}
+        stroke={['#1683a5','#c17a27','#6c7db5'][i]}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />)}
+
+      {points.map((p,i)=><g key={i}>
+        <circle cx={X(p.x)} cy={Y(p.y)} r="4.5" fill="#163f5a"/>
+        <text x={X(p.x)+7} y={Y(p.y)-8} fontSize="11" fill="#163f5a">P{i+1}</text>
+      </g>)}
     </>}
   </svg>;
 }
