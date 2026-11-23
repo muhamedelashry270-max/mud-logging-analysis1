@@ -111,7 +111,7 @@ export function calculateMudLogging(input: GasInputs): CalculationResult {
   const lhr = div(c1 + c2, c3 + c4 + c5);
   const ocq = div(c4 + c5, c3);
   const gwrClass = !Number.isFinite(gwr) ? '#ERROR' : gwr < 0.5 ? 'Light Dry Gas'
-    : gwr < 0.175 ? 'Medium Density Gas'
+    : gwr < 1.75 ? 'Medium Density Gas'
     : gwr < 40 ? 'Medium Gravity Oil' : 'Residual Oil';
   const lhrClass = !Number.isFinite(lhr) ? '#ERROR' : lhr > 100 ? 'Light Dry Gas'
     : lhr > 17.5 ? 'Medium Density Gas'
