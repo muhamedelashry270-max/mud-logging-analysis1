@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { calculateMudLogging, WORKBOOK_SAMPLE } from '../lib/calculations.ts';
+const r = calculateMudLogging(WORKBOOK_SAMPLE);
+assert.deepEqual(r.increments, [938000, 52000, 13000, 11000, 4000]);
+assert.equal(r.pixler.hydrocarbonType, 'Rich Gas');
+assert.equal(r.pixler.productivity, 'Moderate Productivity Zone');
+assert.equal(r.triangulation.zone, 'Expected Gas Zone');
+assert.equal(r.triangulation.classification, 'Moderate Rich Wet Gas');
+assert.ok(Math.abs(r.threeRatios.gwr.value - 0.0785854616895874) < 1e-12);
+assert.ok(Math.abs(r.threeRatios.lhr.value - 35.3571428571429) < 1e-10);
+assert.ok(Math.abs(r.threeRatios.ocq.value - 1.15384615384615) < 1e-12);
+assert.equal(r.threeRatios.gwr.classification, 'Light Dry Gas');
+console.log('Workbook sample regression checks passed.');
