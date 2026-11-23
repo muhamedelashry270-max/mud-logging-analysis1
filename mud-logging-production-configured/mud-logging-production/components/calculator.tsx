@@ -175,20 +175,20 @@ export default function Calculator() {
           {result.pixler.ratios.map((v,i)=><Result key={i} label={`C1/C${i+2}`} value={show(v)}/>)}<Result label="C4/C1 slope (J12)" value={show(result.pixler.c4c1Slope)}/>
         </section>
         <section className="card wide">
-  <h3>03 · B.O. Pixler Ratio Plot</h3>
+  <h3>04 · B.O. Pixler Ratio Plot</h3>
   <PixlerPlot ratios={result.pixler.ratios} />
   <div className="status">
     Reference values are taken from the original workbook.
     The chart updates automatically with the gas readings.
   </div>
 </section>
-        <section className="card"><h3>04 · Triangulation Technique</h3>
+        <section className="card"><h3>05 · Triangulation Technique</h3>
           <Result label="Zone" value={result.triangulation.zone}/><Result label="Classification" value={result.triangulation.classification}/><Result label="Triangle size (B61)" value={show(result.triangulation.triangleSize)}/><Result label="X difference (B59)" value={show(result.triangulation.xDifference)}/><Result label="Y difference (B60)" value={show(result.triangulation.yDifference)}/>
         </section>
-        <section className="card"><h3>05 · Three Ratio Technique <span className="hint">(Optional results)</span></h3><div className="ratios">{ratios.map(([name,v])=><div className="ratio" key={name}><b>{name}</b><strong>{show(v.value)}</strong><small>{v.classification}</small></div>)}</div><div className="notice" style={{marginTop:12}}>The GWR IF order is preserved exactly: E2 &lt; 0.5 is tested before E2 &lt; 0.175, making the second branch unreachable for ordinary numeric inputs.</div></section>
-        <section className="card"><h3>06 · Calculation checks</h3>{diagnostics.length?diagnostics.map((d,i)=><Result key={i} label="Check" value={d}/>):<Result label="Input checks" value="No basic numeric warnings detected"/>}<div className="status">Warnings do not modify the workbook&apos;s formulas or classifications.</div></section>
-        <section className="card wide"><h3>07 · Triangulation chart</h3><Plot lines={[result.triangulation.line1,result.triangulation.line2,result.triangulation.line3]} points={result.triangulation.intersections}/><div className="status">Chart plots the workbook&apos;s construction lines and recalculated intersections.</div></section>
-        <section className="card wide"><h3>08 · Final user interpretation / conclusion</h3><p className="hint">The three method results remain independent. Enter the final geological / mud logging conclusion here.</p><div className="field"><label htmlFor="conclusion">Final conclusion</label><textarea id="conclusion" value={meta.conclusion} onChange={e=>setMeta(old=>({...old,conclusion:e.target.value}))} placeholder="Enter the final interpretation…"/></div></section>
+        <section className="card"><h3>06 · Three Ratio Technique <span className="hint">(Optional results)</span></h3><div className="ratios">{ratios.map(([name,v])=><div className="ratio" key={name}><b>{name}</b><strong>{show(v.value)}</strong><small>{v.classification}</small></div>)}</div><div className="notice" style={{marginTop:12}}>The GWR IF order is preserved exactly: E2 &lt; 0.5 is tested before E2 &lt; 0.175, making the second branch unreachable for ordinary numeric inputs.</div></section>
+        <section className="card"><h3>07 · Calculation checks</h3>{diagnostics.length?diagnostics.map((d,i)=><Result key={i} label="Check" value={d}/>):<Result label="Input checks" value="No basic numeric warnings detected"/>}<div className="status">Warnings do not modify the workbook&apos;s formulas or classifications.</div></section>
+        <section className="card wide"><h3>08 · Triangulation chart</h3><Plot lines={[result.triangulation.line1,result.triangulation.line2,result.triangulation.line3]} points={result.triangulation.intersections}/><div className="status">Chart plots the workbook&apos;s construction lines and recalculated intersections.</div></section>
+        <section className="card wide"><h3>09 · Final user interpretation / conclusion</h3><p className="hint">The three method results remain independent. Enter the final geological / mud logging conclusion here.</p><div className="field"><label htmlFor="conclusion">Final conclusion</label><textarea id="conclusion" value={meta.conclusion} onChange={e=>setMeta(old=>({...old,conclusion:e.target.value}))} placeholder="Enter the final interpretation…"/></div></section>
       </div>
       <div className="footer">Formula source: supplied Mud Logging Analysis workbook. Results are calculation aids and require qualified operational interpretation.</div>
     </main>
