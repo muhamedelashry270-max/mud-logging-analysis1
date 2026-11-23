@@ -18,15 +18,16 @@ export default function PixlerPlot({ ratios }: { ratios: readonly number[] }) {
   const ticks = [1, 2, 5, 10, 20, 50, 100, 200, 300];
   const valid = (v: number) => Number.isFinite(v) && v > 0;
   const segments = (values: readonly (number | null)[]) => {
-    const output: string[] = [];
-    let run: string[] = [];
-    values.forEach((value, index) => {
-      if (value !== null && valid(value)) run.push(`${X(index)},${Y(value)}`);
-      else { if (run.length > 1) output.push(run.join(' ')); run = []; }
-    });
-    if (run.length > 1) output.push(run.join(' '));
-    return output;
-  };
+  const points = values
+    .map((value, index) =>
+      value !== null && valid(value)
+        ? `${X(index)},${Y(value)}`
+        : null
+    )
+    .filter((point): point is string => point !== null);
+
+  return points.length > 1 ? [points.join(' ')] : [];
+};
 
   return <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="B.O. Pixler ratio plot with workbook reference values and calculated ratios">
     {ticks.map(value => <g key={value}>
