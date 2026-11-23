@@ -46,6 +46,19 @@ export default function PixlerPlot({ ratios }: { ratios: readonly number[] }) {
       {series.values.map((value, index) => value !== null && valid(value)
         ? <circle key={index} cx={X(index)} cy={Y(value)} r="4" fill={series.color} /> : null)}
     </g>)}
+    <polyline
+  points={ratios
+    .map((value, index) =>
+      valid(value) ? `${X(index)},${Y(value)}` : null
+    )
+    .filter((point): point is string => point !== null)
+    .join(' ')}
+  fill="none"
+  stroke="#163f5a"
+  strokeWidth="2.5"
+  strokeDasharray="2 5"
+  strokeLinecap="round"
+/>
     {ratios.map((value, index) => valid(value) ? <g key={index}>
       <circle cx={X(index)} cy={Y(value)} r="6" fill="#163f5a" stroke="white" strokeWidth="2" />
       <text x={X(index) + 8} y={Y(value) - 9} fontSize="11" fill="#163f5a">{formatRatio(value)}</text>
