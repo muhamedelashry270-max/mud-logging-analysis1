@@ -1,4 +1,4 @@
-'tuse client';
+'use client';
 
 const formatRatio = (value: number) => value.toLocaleString('en-US', { maximumFractionDigits: 6 });
 
