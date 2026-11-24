@@ -1,15 +1,10 @@
 'use client';
 import PixlerPlot from './pixler-plot';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
+import { useMemo, useState } from 'react';
 import { calculateMudLogging, WORKBOOK_SAMPLE, type GasInputs, type Point } from '@/lib/calculations';
-import { createClient } from '@/lib/supabase/client';
 
-type SavedAnalysis = {
-  id: string; well_name: string; formation: string; interval_label: string;
-  background_values: number[]; measured_values: number[]; final_interpretation: string;
-  updated_at: string;
-};
+
+
 const initialMeta = { well: '', formation: '', interval: '', conclusion: '' };
 const fmt = (v: number) => Number.isFinite(v) ? v.toLocaleString('en-US', { maximumFractionDigits: 6 }) : String(v);
 const show = (v: number) => Number.isFinite(v) ? fmt(v) : '#NUM! / #DIV/0!';
@@ -78,33 +73,10 @@ export default function Calculator() {
   const [meta,setMeta]=useState(initialMeta);
   const [background,setBackground]=useState<[number,number,number,number,number]>([...WORKBOOK_SAMPLE.background]);
   const [values,setValues]=useState<[number,number,number,number,number]>([...WORKBOOK_SAMPLE.values]);
-  const [user,setUser]=useState<User|null>(null);
-  const [email,setEmail]=useState('');
-  const [status,setStatus]=useState('Guest mode: calculations are available without signing in.');
-  const [saved,setSaved]=useState<SavedAnalysis[]>([]);
-  const [selected,setSelected]=useState('');
-  const [busy,setBusy]=useState(false);
-  const supabase=useMemo(()=>{
-    if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
-    return createClient();
-  },[]);
+  
+
   const result=useMemo(()=>calculateMudLogging({background,values}),[background,values]);
   const inputs:GasInputs={background,values};
-
-  const refreshSaved=useCallback(async()=>{
-    if(!supabase||!user)return;
-    const {data,error}=await supabase.from('analyses').select('id,well_name,formation,interval_label,background_values,measured_values,final_interpretation,updated_at').order('updated_at',{ascending:false}).limit(100);
-    if(error){setStatus(`Could not load saved analyses: ${error.message}`);return;}
-    setSaved((data??[]) as SavedAnalysis[]);
-  },[supabase,user]);
-
-  useEffect(()=>{
-    if(!supabase)return;
-    supabase.auth.getUser().then(({data})=>setUser(data.user));
-    const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>setUser(session?.user??null));
-    return ()=>subscription.unsubscribe();
-  },[supabase]);
-  useEffect(()=>{void refreshSaved();},[refreshSaved]);
 
   const updateArray=(kind:'background'|'values',index:number,raw:string)=>{
     const parsed=raw.trim()===''?0:Number(raw);
@@ -112,40 +84,29 @@ export default function Calculator() {
     if(kind==='background')setBackground(old=>old.map((v,i)=>i===index?parsed:v) as typeof old);
     else setValues(old=>old.map((v,i)=>i===index?parsed:v) as typeof old);
   };
-  const sendMagicLink=async()=>{
-    if(!supabase){setStatus('Authentication is not configured yet. Add the Supabase environment variables to enable accounts.');return;}
-    if(!email.trim()){setStatus('Enter your email address to receive a sign-in link.');return;}
-    setBusy(true);const {error}=await supabase.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:`${window.location.origin}/auth/callback`}});setBusy(false);
-    setStatus(error?`Sign-in failed: ${error.message}`:'Check your email for the secure sign-in link.');
-  };
-  const signOut=async()=>{if(!supabase)return;await supabase.auth.signOut();setSaved([]);setStatus('Signed out. Guest calculations remain available.');};
-  const saveAnalysis=async()=>{
-    if(!supabase||!user){setStatus('Sign in to save private analyses. Guests can still print or export a local JSON copy.');return;}
-    setBusy(true);
-    const payload={well_name:meta.well,formation:meta.formation,interval_label:meta.interval,background_values:background,measured_values:values,final_interpretation:meta.conclusion};
-    const {data,error}=await supabase.from('analyses').insert(payload).select('id').single();
-    setBusy(false);
-    if(error){setStatus(`Save failed: ${error.message}`);return;}
-    setStatus('Analysis saved privately to your account.');await refreshSaved();if(data?.id)setSelected(data.id);
-  };
-  const loadAnalysis=()=>{
-    const item=saved.find(x=>x.id===selected);if(!item)return;
-    setMeta({well:item.well_name,formation:item.formation,interval:item.interval_label,conclusion:item.final_interpretation});
-    setBackground(item.background_values as typeof background);setValues(item.measured_values as typeof values);
-    setStatus('Saved analysis loaded.');
-  };
-  const deleteAnalysis=async()=>{
-    if(!supabase||!user||!selected)return;
-    const {error}=await supabase.from('analyses').delete().eq('id',selected);
-    if(error){setStatus(`Delete failed: ${error.message}`);return;}
-    setSelected('');await refreshSaved();setStatus('Saved analysis deleted.');
-  };
+
   const exportJson=()=>{
-    const payload={workbookReference:'Mud Logging Analysis workbook',exportedAt:new Date().toISOString(),metadata:meta,inputs,results:result};
+    const payload={
+      workbookReference:'Mud Logging Analysis workbook',
+      exportedAt:new Date().toISOString(),
+      metadata:meta,
+      inputs,
+      results:result
+    };
     const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
-    const a=document.createElement('a');a.href=url;a.download='mud-logging-analysis.json';a.click();URL.revokeObjectURL(url);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='mud-logging-analysis.json';
+    a.click();
+    URL.revokeObjectURL(url);
   };
-  const reset=()=>{setMeta(initialMeta);setBackground([2000,1000,2000,1000,500]);setValues([940000,53000,15000,12000,4500]);setStatus('New interval ready.');};
+
+  const reset=()=>{
+    setMeta(initialMeta);
+    setBackground([2000,1000,2000,1000,500]);
+    setValues([940000,53000,15000,12000,4500]);
+  };
+
   const ratios=[['GWR',result.threeRatios.gwr],['LHR',result.threeRatios.lhr],['OCQ',result.threeRatios.ocq]] as const;
   const diagnostics:string[]=[];
   if(result.increments.some(v=>v===0))diagnostics.push('A zero increment may produce division-by-zero or logarithm errors in the workbook formulas.');
@@ -153,16 +114,22 @@ export default function Calculator() {
   if(!Number.isFinite(result.triangulation.triangleSize))diagnostics.push('Triangulation includes an undefined numeric result. Check inputs and total gas.');
 
   return <>
-    <header className="top"><div><h1>MUD LOGGING ANALYSIS</h1><p>Hydrocarbon Interpretation System · Workbook-based calculations</p></div><div>{user?`Signed in: ${user.email}`:'Guest calculation mode'}</div></header>
+    <header className="top">
+    <div>
+    <h1>MUD LOGGING ANALYSIS</h1>
+    <p>Hydrocarbon Interpretation System · Workbook-based calculations</p>
+    </div>
+    <div>Public calculator · No account required</div>
+    </header>
     <main className="wrap">
       <div className="intro"><div><h2>New interval analysis</h2><div className="muted">Enter well details and gas readings. All three methods recalculate automatically.</div></div>
-        <div className="actions"><button className="btn" onClick={reset}>Reset</button><button className="btn" onClick={()=>window.print()}>Print / Save PDF</button><button className="btn" onClick={exportJson}>Export JSON</button><button className="btn primary" onClick={saveAnalysis} disabled={busy||!user}>Save to account</button></div>
+      <div className="actions">
+        <button className="btn" onClick={reset}>Reset</button>
+        <button className="btn" onClick={()=>window.print()}>Print / Save PDF</button>
+        <button className="btn" onClick={exportJson}>Export JSON</button>
       </div>
-      <section className="card" style={{marginBottom:16}}><h3>Account and saved analyses</h3>
-        {!user?<div className="auth"><input aria-label="Email address" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/><button className="btn primary" onClick={sendMagicLink} disabled={busy}>Email me a sign-in link</button><span className="hint">Guests can calculate without an account. Sign-in is only needed for private cloud storage.</span></div>
-        :<div className="saved"><button className="btn" onClick={signOut}>Sign out</button><select aria-label="Saved analyses" value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Choose a saved analysis…</option>{saved.map(s=><option key={s.id} value={s.id}>{s.well_name||'Untitled well'} · {s.interval_label||'No interval'} · {new Date(s.updated_at).toLocaleDateString()}</option>)}</select><button className="btn" onClick={loadAnalysis} disabled={!selected}>Load</button><button className="btn" onClick={deleteAnalysis} disabled={!selected}>Delete</button><button className="btn" onClick={refreshSaved}>Refresh list</button></div>}
-        <div className="status" role="status">{status}</div>
-      </section>
+      </div>
+     
       <div className="grid">
         <section className="card"><h3>01 · Well information</h3><div className="fields">
           {([['well','Well'],['formation','Formation'],['interval','Interval']] as const).map(([key,label])=><div className="field" key={key}><label htmlFor={key}>{label}</label><input id={key} value={meta[key]} onChange={e=>setMeta(old=>({...old,[key]:e.target.value}))} placeholder={label==='Interval'?'e.g. 2500–2520 m':label}/></div>)}
