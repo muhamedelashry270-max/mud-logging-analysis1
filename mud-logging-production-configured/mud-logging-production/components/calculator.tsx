@@ -10,7 +10,7 @@ const fmt = (v: number) => Number.isFinite(v) ? v.toLocaleString('en-US', { maxi
 const show = (v: number) => Number.isFinite(v) ? fmt(v) : '#NUM! / #DIV/0!';
 
 function Plot({ lines, points }: { lines: {slope:number;intercept:number}[]; points: Point[] }) {
-  const W=720,H=330,L=54,R=20,T=18,B=42,pw=W-L-R,ph=H-T-B,xmin=0,xmax=25,ymin=0,ymax=20;
+  const W=720,H=330,L=54,R=20,T=18,B=42,pw=W-L-R,ph=H-T-B,xmin=-1,xmax=26,ymin=-1,ymax=10;
   const X=(x:number)=>L+(x-xmin)/(xmax-xmin)*pw, Y=(y:number)=>T+ph-(y-ymin)/(ymax-ymin)*ph;
 
   const validPoints = points.length === 3 && points.every(
@@ -31,7 +31,7 @@ function Plot({ lines, points }: { lines: {slope:number;intercept:number}[]; poi
       <text x={X(x)} y={H-17} textAnchor="middle" fontSize="11" fill="#65798a">{x}</text>
     </g>)}
 
-   {Array.from({length:5},(_,i)=>i*5).map(y=><g key={`y${y}`}>
+   {Array.from({length:6},(_,i)=>i*2).map(y=><g key={`y${y}`}>
       <line x1={L} y1={Y(y)} x2={L+pw} y2={Y(y)} stroke="#e7edf1"/>
       <text x={L-12} y={Y(y)+4} textAnchor="end" fontSize="11" fill="#65798a">{y}</text>
     </g>)}
